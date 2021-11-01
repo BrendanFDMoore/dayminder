@@ -47,8 +47,9 @@ const sendMessage = async (msgText) => {
   
   try {
 
-    // trim to 150 char to avoid multi-message billing (not needed for testing)
-    const maxlength = 150;
+    // trim to 100 char to avoid multi-message billing (not needed for testing)
+    // Trial prefixes "Sent from your Twilio trial account - " (38 char)
+    const maxlength = 100;
     const trimmedMessage = msgText.substring(0, maxlength);
     const message = await twilioclient.messages 
       .create({   
