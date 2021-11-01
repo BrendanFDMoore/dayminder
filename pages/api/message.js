@@ -39,16 +39,21 @@ const verifyAuth = async ( authHeader ) => {
   }
 };
 
-const sendMessage = async () => {
+const sendMessage = async (msgText) => {
     console.log('sendMessage');
     const twilioclient = twilio(accountSid, authToken, {
     logLevel: 'debug'
   });
   
   try {
+
+    // trim to 100 char to avoid multi-message billing (not needed for testing)
+    // Trial prefixes "Sent from your Twilio trial account - " (38 char)
+    const maxlength = 100;
+    const trimmedMessage = msgText.substring(0, maxlength);
     const message = await twilioclient.messages 
       .create({   
-        body: 'this is a test!',  
+        body: trimmedMessage,  
         messagingServiceSid: messageSid,      
         to: phoneNumber, // in trial mode this can only be your own verified number
       });
@@ -61,7 +66,8 @@ const sendMessage = async () => {
 
 export default async function handler(req, res) {
   if (await verifyAuth(req.headers.authorization)){
-    const msgSuccess = await sendMessage();
+    const { text = 'default message' } = req.body;
+    const msgSuccess = await sendMessage(text);
     if (msgSuccess) {
       res.status(200).json({ message: 'OK!' })
     } else {
